@@ -91,12 +91,10 @@ bool SubMod::AddReplacementAnimation(std::string_view a_animPath, uint16_t a_ori
 
 			{
 				WriteLocker locker(_dataLock);
-				_replacementAnimations.emplace_back(newReplacementAnimation.get());
 
-				// sort replacement animations by path
-				std::ranges::sort(_replacementAnimations, [](const auto& a_lhs, const auto& a_rhs) {
-					return a_lhs->_path < a_rhs->_path;
-				});
+				// keep replacement animations sorted by path; insert after any equal paths (insertion order among equals)
+				const auto insertPos = std::ranges::upper_bound(_replacementAnimations, newReplacementAnimation->_path, std::less<>{}, &ReplacementAnimation::_path);
+				_replacementAnimations.insert(insertPos, newReplacementAnimation.get());
 			}
 
 			// load anim data
